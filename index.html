@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HW4 Fruit API</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <img src="/fruit.png" alt="Fruit Image" class="hero-img">
+  <header class="card">
+    <h1>HW4 Fruit API</h1>
+    <p>
+     The API stores a global fruits[] array in memory.
+    </p>
+    <p class="hint">
+      Base URL: <code>https://dylantrent.chickenkiller.com</code>
+    </p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>GET Links</h2>
+      <ul>
+        <li><a href="/api/fruits">GET /api/fruits (everything)</a></li>
+        <li><a href="/api/fruits?id=1">GET /api/fruits?id=1</a></li>
+        <li><a href="/api/fruits?name=apple">GET /api/fruits?name=apple</a></li>
+        <li><a href="/api/fruits?id=9999">GET /api/fruits?id=9999 (404 demo)</a></li>
+        <li><a href="/api/fruits?nope=1">GET /api/fruits?nope=1 (400 demo)</a></li>
+      </ul>
+    </section>
+
+    <section class="grid">
+      <section class="card">
+        <h2>GET with Query Parameters</h2>
+        <form method="get" action="/api/fruits">
+          <label for="id">id</label>
+          <input id="id" name="id" type="number" min="1" placeholder="e.g., 2">
+
+          <p class="hint">OR</p>
+
+          <label for="name">name</label>
+          <input id="name" name="name" type="text" placeholder="e.g., banana">
+
+          <button type="submit">Send GET</button>
+          <p class="hint">Leave both blank to return “everything”.</p>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>POST (Create a Fruit)</h2>
+        <form method="post" action="/api/fruits">
+          <label for="postName">name (required)</label>
+          <input id="postName" name="name" type="text" required placeholder="e.g., mango">
+          <button type="submit">Send POST</button>
+	  <button type="button" id="postErrorBtn">Demo POST 400 with missing name</button>
+          <p class="hint">
+            On success the API returns <code>201</code>. Then
+            <a href="/api/fruits">GET /api/fruits</a> will show the new fruit.
+          </p>
+        </form>
+
+        <details>
+          <p class="hint">
+            HTML prevents blank submits, so use the Demo POST 400 button instead
+          </p>
+        </details>
+      </section>
+    </section>
+
+    <section class="card">
+      <h2>PUT / DELETE Demo (uses fetch)</h2>
+      <p class="hint">
+        Forms don’t support PUT/DELETE, so these buttons use <code>fetch()</code>.
+      </p>
+
+      <div class="grid">
+        <div>
+          <h3>PUT rename fruit</h3>
+          <label for="putId">id</label>
+          <input id="putId" type="number" min="1" placeholder="e.g., 1">
+
+          <label for="putName">new name</label>
+          <input id="putName" type="text" placeholder="e.g., green apple">
+
+          <button type="button" id="putBtn">Send PUT</button>
+        </div>
+
+        <div>
+          <h3>DELETE fruit</h3>
+          <label for="delId">id</label>
+          <input id="delId" type="number" min="1" placeholder="e.g., 2">
+          <button type="button" id="delBtn">Send DELETE</button>
+        </div>
+      </div>
+
+      <h3>Response viewer</h3>
+      <pre id="out" aria-live="polite">(responses will appear here)</pre>
+    </section>
+
+    <section class="card">
+      <h2>Other Links</h2>
+      <ul>
+        <li><a href="/page2.html">Go to Page 2</a></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="card">
+    <p class="hint">After POST/PUT/DELETE, click <a href="/api/fruits">GET /api/fruits</a> to see the updated global list.</p>
+  </footer>
+
+  <script>
+    const out = document.getElementById('out');
+
+    async function showResponse(resp) {
+      const text = await resp.text();
+      out.textContent = `HTTP ${resp.status}\n\n` + (text || '');
+    }
+
+    document.getElementById('putBtn').addEventListener('click', async () => {
+      const id = document.getElementById('putId').value;
+      const name = document.getElementById('putName').value;
+
+      try {
+        const resp = await fetch(`/api/fruits/${encodeURIComponent(id)}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+        await showResponse(resp);
+      } catch (e) {
+        out.textContent = String(e);
+      }
+    });
+
+    document.getElementById('delBtn').addEventListener('click', async () => {
+      const id = document.getElementById('delId').value;
+
+      try {
+        const resp = await fetch(`/api/fruits/${encodeURIComponent(id)}`, {
+          method: 'DELETE'
+        });
+        await showResponse(resp);
+      } catch (e) {
+        out.textContent = String(e);
+      }
+    });
+
+    document.getElementById('postErrorBtn').addEventListener('click', async () => {
+      try {
+        const resp = await fetch('/api/fruits', {
+          method: 'POST',
+	  headers: { 'Content-Type': 'application/json' },
+	  body: JSON.stringify({})
+	});
+	await showResponse(resp);
+      } catch (e) {
+	out.textContent = String(e);
+      }
+    });
+  </script>
+</body>
+</html>
